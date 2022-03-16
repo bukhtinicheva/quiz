@@ -13,20 +13,9 @@ def format_osn(stroka):
     a = list(a)
     return ''.join(a[1:-1])
 
-def format_cor(stroka):
-    a = []
-    for i in range(len(stroka)):
-        a.append(str(stroka[i])[1:-2])
-    a = str(a)
-    a = a.replace("[", '')
-    a = a.replace("]", '')
-    a = a.replace("'", '')
-    a = a[1:-1]
-    a = a.split(", ")
-    return a
-
 def format_ans(stroka):
     a = []
+    c = ''
     for i in range(len(stroka)):
         a.append(str(stroka[i])[1:-2])
     a = str(a)
@@ -39,7 +28,11 @@ def format_ans(stroka):
     for i in range(len(a)):
         if a[i].isupper() or a[i].isdigit():
             a[i-1] = ', '
-    return "".join(a[:-1])
+    b = "".join(a[:-1])
+    b = b.split(', ')
+    for i in range(len(b)):
+        c = c + b[i] + f': {i + 1}, '
+    return c[:-2]
 
 flag = True
 level = 1
@@ -58,15 +51,18 @@ while flag and level <= 5:
         ansers = format_ans(cursor.execute(f"""SELECT ans_1, ans_2, ans_3, ans_4 FROM level_{level} WHERE id = {number_s[count - 1]}""").fetchall())
         print(f'Внимание, вопрос №{count}: {question}')
         print(f'Варианты ответа: {ansers}')
-        correct = format_cor(cursor.execute(f"""SELECT correct_ans FROM level_{level} WHERE id = {number_s[count - 1]}""").fetchall())
-        anser = input()
-        if anser in correct:
+        correct = format_osn(cursor.execute(f"""SELECT correct_ans FROM level_{level} WHERE id = {number_s[count - 1]}""").fetchall())
+        answer = input('Введите вариант ответа или нажмите "Q" для выхода из викторины:')
+        if answer == 'q' or answer == 'Q':
+            fl = False
+            print('Вы вышли из викторины.\nВикторина окончена.')
+        elif str(answer) == correct:
             print('Правильный ответ\n')
         else:
             print('Неправильный ответ. К сожалению, Вы проиграли.\nВикторина окончена.')
             fl = False
             connection.close()
-    if fl == False:
+    if not fl:
         flag = False
     if flag:
         if count == 2:
